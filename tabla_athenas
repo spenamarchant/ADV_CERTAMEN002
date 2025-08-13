@@ -1,0 +1,31 @@
+CREATE EXTERNAL TABLE IF NOT EXISTS movies (
+  adult BOOLEAN,
+  belongs_to_collection STRING,
+  budget BIGINT,
+  genres ARRAY<STRUCT<id: INT, name: STRING>>,
+  homepage STRING,
+  id STRING,
+  imdb_id STRING,
+  original_language STRING,
+  original_title STRING,
+  overview STRING,
+  popularity DOUBLE,
+  poster_path STRING,
+  production_companies ARRAY<STRUCT<name: STRING, id: INT>>,
+  production_countries ARRAY<STRUCT<iso_3166_1: STRING, name: STRING>>,
+  release_date DATE,
+  revenue BIGINT,
+  runtime DOUBLE,
+  spoken_languages ARRAY<STRUCT<iso_639_1: STRING, name: STRING>>,
+  status STRING,
+  tagline STRING,
+  title STRING,
+  video BOOLEAN,
+  vote_average DOUBLE,
+  vote_count INT
+)
+PARTITIONED BY (release_year INT)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+STORED AS PARQUET
+LOCATION 's3://tu-bucket-movies/movies_clean/';
+MSCK REPAIR TABLE movies;
