@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+import sys
+import math
+from collections import defaultdict
+
+data = defaultdict(lambda: {'comps': [], 'counts': [], 'votes': []})
+
+for line in sys.stdin:
+    try:
+        query_id, decade, num_comp, num_count, vote_count = line.strip().split('\t')
+        if query_id != 'q5': continue
+        data[decade]['comps'].append(int(num_comp))
+        data[decade]['counts'].append(int(num_count))
+        data[decade]['votes'].append(int(vote_count))
+    except:
+        continue
+
+results = []
+for decade, values in data.items():
+    n = len(values['votes'])
+    avg_comps = sum(values['comps']) / n
+    avg_counts = sum(values['counts']) / n
+    total_votes = sum(values['votes'])
+    complexity = [c + k for c, k in zip(values['comps'], values['counts'])]
+    mean_x = sum(values['votes']) / n
+    mean_y = sum(complexity) / n
+    cov = sum((x - mean_x) * (y - mean_y) for x, y in zip(values['votes'], complexity)) / n
+    std_x = math.sqrt(sum((x - mean_x) ** 2 for x in values['votes']) / n) if n > 1 else 1
+    std_y = math.sqrt(sum((y - mean_y) ** 2 for y in complexity) / n) if n > 1 else 1
+    corr = cov / (std_x * std_y) if std_x * std_y != 0 else 0
+    results.append((int(decade), avg_comps, avg_counts, corr, total_votes))
+
+for decade, avg_comps, avg_counts, corr, total_votes in sorted(results, reverse=True)[:10]:
+    print(f"{decade}\t{avg_comps:.2f}\t{avg_counts:.2f}\t{corr:.2f}\t{total_votes}")
