@@ -1,0 +1,29 @@
+import { runAthenaQuery } from './athenaClient.js';
+import fs from 'fs';
+
+(async () => {
+    try {
+        const query = `
+WITH genre_exploded AS (
+  SELECT explode(genres) AS genre, belongs_to_collection.name AS collection, popularity, YEAR(release_date) AS year
+  FROM movies WHERE genres IS NOT NULL AND belongs_to_collection IS NOT NULL
+),
+grouped AS (
+  SELECT genre.name AS genre, collection, year, SUM(popularity) AS total_popularity
+  FROM genre_exploded GROUP BY genre.name, collection, year
+)
+SELECT genre, collection, year, total_popularity,
+  (total_popularity - LAG(total_popularity) OVER (PARTITION BY genre, collection ORDER BY year)) / LAG(total_popularity) OVER (PARTITION BY genre, collection ORDER BY year) * 100 AS growth_pct
+FROM grouped
+WHERE total_popularity > 0
+ORDER BY growth_pct DESC
+LIMIT 10;
+        `;
+        const { results, execTime } = await runAthenaQuery(query);
+        console.log('Resultados:', JSON.stringify(results.Rows, null, 2));
+        console.log(`Tiempo total: ${execTime.toFixed(2)}s`);
+        fs.appendFileSync('adaptations.log', `Query 3 resultados: ${JSON.stringify(results.Rows.slice(0, 5), null, 2)}\n`);
+    } catch (err) {
+        console.error('Error:', err);
+    }
+})();
