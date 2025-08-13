@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+import sys
+import math
+from collections import defaultdict
+
+counts = defaultdict(int)
+data = defaultdict(lambda: {'revenues': [], 'langs': []})
+
+for line in sys.stdin:
+    try:
+        query_id, orig_lang, decade, revenue, num_langs = line.strip().split('\t')
+        if query_id != 'q2': continue
+        key = f"{orig_lang}\t{decade}"
+        counts[key] += 1
+        data[key]['revenues'].append(int(revenue))
+        data[key]['langs'].append(int(num_langs))
+    except:
+        continue
+
+results = []
+for key, values in data.items():
+    if counts[key] > 5:
+        n = len(values['revenues'])
+        avg_rev = sum(values['revenues']) / n
+        avg_langs = sum(values['langs']) / n
+        cov = sum((x - avg_rev) * (y - avg_langs) for x, y in zip(values['revenues'], values['langs'])) / n
+        std_x = math.sqrt(sum((x - avg_rev) ** 2 for x in values['revenues']) / n) if n > 1 else 1
+        std_y = math.sqrt(sum((y - avg_langs) ** 2 for y in values['langs']) / n) if n > 1 else 1
+        corr = cov / (std_x * std_y) if std_x * std_y != 0 else 0
+        results.append((avg_rev, key, avg_langs, corr))
+
+results.sort(reverse=True)
+for avg_rev, key, avg_langs, corr in results[:10]:
+    orig_lang, decade = key.split('\t')
+    print(f"{orig_lang}\t{decade}\t{avg_rev:.2f}\t{avg_langs:.2f}\t{corr:.2f}")
