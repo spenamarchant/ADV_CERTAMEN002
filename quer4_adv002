@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+import sys
+import math
+from collections import defaultdict
+
+data = defaultdict(list)
+
+for line in sys.stdin:
+    try:
+        query_id, country, status, roi = line.strip().split('\t')
+        if query_id != 'q4': continue
+        data[f"{country}\t{status}"].append(float(roi))
+    except:
+        continue
+
+results = []
+for key, rois in data.items():
+    n = len(rois)
+    avg_roi = sum(rois) / n
+    if avg_roi > 1:
+        variance = sum((x - avg_roi) ** 2 for x in rois) / n
+        results.append((variance, key, avg_roi))
+
+results.sort(reverse=True)
+for rank, (var, key, avg_roi) in enumerate(results[:10], 1):
+    country, status = key.split('\t')
+    print(f"{country}\t{status}\t{var:.2f}\t{avg_roi:.2f}\t{rank}")
