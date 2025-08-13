@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+import sys
+import json
+
+for line in sys.stdin:
+    try:
+        fields = line.strip().split(',')
+        genres = fields[3]  # genres (JSON)
+        collection = fields[1]  # belongs_to_collection (JSON)
+        budget = int(fields[2] or 1)  # budget
+        orig_lang = fields[7]  # original_language
+        popularity = float(fields[11] or 0.0)  # popularity
+        prod_companies = fields[12]  # production_companies (JSON)
+        prod_countries = fields[13]  # production_countries (JSON)
+        release_date = fields[14]  # release_date
+        revenue = int(fields[15] or 0)  # revenue
+        spoken_langs = fields[17]  # spoken_languages (JSON)
+        status = fields[18]  # status
+        vote_average = float(fields[22] or 0.0)  # vote_average
+        vote_count = int(fields[23] or 0)  # vote_count
+
+        # Query 1: Variabilidad vote_average por compañía y status
+        if prod_companies and prod_companies != '[]' and status:
+            companies = json.loads(prod_companies.replace("'", '"'))
+            for company in companies:
+                company_name = company.get('name', '').replace('\t', ' ')
+                if company_name:
+                    print(f"q1\t{company_name}\t{status}\t{vote_average}")
+
+        # Query 2: Diversidad spoken_languages vs revenue por orig_lang y década
+        if orig_lang and release_date and revenue > 0 and spoken_langs and spoken_langs != '[]':
+            year = release_date.split('-')[0]
+            decade = str(int(year) // 10 * 10)
+            num_langs = len(json.loads(spoken_langs.replace("'", '"')))
+            print(f"q2\t{orig_lang}\t{decade}\t{revenue}\t{num_langs}")
+
+        # Query 3: Tendencia popularity por género y colección
+        if genres and genres != '[]' and collection and collection != '[]' and release_date:
+            genres_list = json.loads(genres.replace("'", '"'))
+            collection_name = json.loads(collection.replace("'", '"')).get('name', '').replace('\t', ' ')
+            year = release_date.split('-')[0]
+            for genre in genres_list:
+                genre_name = genre.get('name', '').replace('\t', ' ')
+                if genre_name and collection_name:
+                    print(f"q3\t{genre_name}\t{collection_name}\t{year}\t{popularity}")
+
+        # Query 4: Variance ROI por país y status
+        if prod_countries and prod_countries != '[]' and budget > 0 and revenue > 0 and status:
+            countries = json.loads(prod_countries.replace("'", '"'))
+            roi = revenue / budget
+            for country in countries:
+                country_name = country.get('name', '').replace('\t', ' ')
+                if country_name:
+                    print(f"q4\t{country_name}\t{status}\t{roi}")
+
+        # Query 5: Complejidad producción vs vote_count por década
+        if release_date and prod_companies and prod_companies != '[]' and prod_countries and prod_countries != '[]':
+            decade = str(int(release_date.split('-')[0]) // 10 * 10)
+            num_comp = len(json.loads(prod_companies.replace("'", '"')))
+            num_count = len(json.loads(prod_countries.replace("'", '"')))
+            print(f"q5\t{decade}\t{num_comp}\t{num_count}\t{vote_count}")
+
+    except:
+        continue
