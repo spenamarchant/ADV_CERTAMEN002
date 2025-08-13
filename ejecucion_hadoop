@@ -1,0 +1,40 @@
+cd /home/ubuntu/proyecto-hadoop
+# Query 1
+hdfs dfs -rm -r /data/output_q1
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+  -mapper mapper_unico.py -reducer reducer_q1.py \
+  -input /data/movies/movies_metadata_clean.csv -output /data/output_q1
+hdfs dfs -cat /data/output_q1/part-* >> adaptations.log
+echo "Query 1: $(date)" >> adaptations.log
+
+# Query 2
+hdfs dfs -rm -r /data/output_q2
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+  -mapper mapper_unico.py -reducer reducer_q2.py \
+  -input /data/movies/movies_metadata_clean.csv -output /data/output_q2
+hdfs dfs -cat /data/output_q2/part-* >> adaptations.log
+echo "Query 2: $(date)" >> adaptations.log
+
+# Query 3
+hdfs dfs -rm -r /data/output_q3
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+  -mapper mapper_unico.py -reducer reducer_q3.py \
+  -input /data/movies/movies_metadata_clean.csv -output /data/output_q3
+hdfs dfs -cat /data/output_q3/part-* >> adaptations.log
+echo "Query 3: $(date)" >> adaptations.log
+
+# Query 4
+hdfs dfs -rm -r /data/output_q4
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+  -mapper mapper_unico.py -reducer reducer_q4.py \
+  -input /data/movies/movies_metadata_clean.csv -output /data/output_q4
+hdfs dfs -cat /data/output_q4/part-* >> adaptations.log
+echo "Query 4: $(date)" >> adaptations.log
+
+# Query 5
+hdfs dfs -rm -r /data/output_q5
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+  -mapper mapper_unico.py -reducer reducer_q5.py \
+  -input /data/movies/movies_metadata_clean.csv -output /data/output_q5
+hdfs dfs -cat /data/output_q5/part-* >> adaptations.log
+echo "Query 5: $(date)" >> adaptations.log
